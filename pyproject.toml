@@ -1,0 +1,20 @@
+[project]
+name = "notebook-bot"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "pixie1977",email = "eugenmac56@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiohttp (>=3.13.2,<4.0.0)",
+    "httpx[http2] (>=0.28.1,<0.29.0)"
+]
+
+[tool.poetry]
+packages = [{include = "notebook_bot", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
