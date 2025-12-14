@@ -1,11 +1,21 @@
 import asyncio
 import httpx
 import logging
+import os
+from dotenv import load_dotenv
+
+# Загружаем переменные из .env
+load_dotenv()
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+api_key = os.getenv("OPENWEATHER_API_KEY")
+telegram_token = os.getenv("TELEGRAM_TOKEN")
+
+control_param = os.getenv("CONTROL_PARAMETER", ".ENV NOT FOUND!")
+print(control_param)
 
 def interpret_weather_code(code: int) -> str:
     code = int(code)
