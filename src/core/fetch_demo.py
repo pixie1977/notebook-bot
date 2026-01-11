@@ -4,6 +4,8 @@ import logging
 import os
 from dotenv import load_dotenv
 
+from src.core.utils import fetch_json, interpret_weather_code
+
 # Загружаем переменные из .env
 load_dotenv()
 
@@ -17,44 +19,7 @@ telegram_token = os.getenv("TELEGRAM_TOKEN")
 control_param = os.getenv("CONTROL_PARAMETER", ".ENV NOT FOUND!")
 print(control_param)
 
-def interpret_weather_code(code: int) -> str:
-    code = int(code)
-    mapping = {
-        0: "☀️ Ясно",
-        1: "🌤 В основном ясно",
-        2: "⛅ Переменная облачность",
-        3: "☁️ Пасмурно",
-        45: "🌫 Туман",
-        48: "🌫️ Туман, иней",
-        51: "🌧 Лёгкая морось",
-        53: "🌧 Умеренная морось",
-        55: "🌧 Сильная морось",
-        61: "🌦 Лёгкий дождь",
-        63: "🌧 Умеренный дождь",
-        65: "🌧 Сильный дождь",
-        71: "🌨 Лёгкий снег",
-        73: "🌨 Умеренный снег",
-        75: "🌨 Сильный снег",
-        77: "🌨 Снежные зёрна",
-        80: "⛈ Лёгкие ливни",
-        81: "⛈ Умеренные ливни",
-        82: "⛈ Сильные ливни",
-        85: "🌨 Лёгкий снежный ливень",
-        86: "🌨 Сильный снежный ливень",
-        95: "🌩 Гроза",
-        96: "⛈ Гроза с лёгким градом",
-        99: "⛈ Гроза с сильным градом",
-    }
-    return mapping.get(code, f"❓ Неизвестный код: {code}")
 
-async def fetch_json(client: httpx.AsyncClient, url: str, name: str):
-    try:
-        response = await client.get(url)
-        response.raise_for_status()
-        return name, response.json()
-    except Exception as e:
-        logger.error(f"Error fetching {url}: {e}")
-        return name, None
 
 async def main():
     # URLs: погода (на примере OpenWeatherMap) и курс криптовалюты (CoinGecko)
