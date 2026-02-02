@@ -13,6 +13,7 @@ async def cmd_start(message: types.Message):
         "/weather — погода в городах по выбору\n"
         "/eth — курс Ethereum\n"
         "/myage — прототип работы с состояниями\n"
+        "/last — 5 последних сообщения в чате\n"
     )
 
 @router.message(Command("help"))
@@ -26,3 +27,4 @@ async def cmd_help(message: types.Message):
 @router.message(Command("FAQ"))
 async def cmd_help(message: types.Message):
     await message.answer("Заглушка для FAQ (2)")
+

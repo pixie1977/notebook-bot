@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from src.config.config import TELEGRAM_TOKEN
-from src.app.routers import start_router, weather_router, crypto_router, form_router
+from src.app.routers import start_router, weather_router, crypto_router, form_router, history_router
 
 
 async def main():
@@ -20,6 +20,7 @@ async def main():
     dp.include_router(weather_router)
     dp.include_router(crypto_router)
     dp.include_router(form_router)
+    dp.include_router(history_router)
 
     # Запуск бота
     logging.info("Bot is starting...")

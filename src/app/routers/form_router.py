@@ -4,6 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message
 
+from src.infra.db_service import save_user, save_message
+
 router = Router()
 
 class Form(StatesGroup):
@@ -55,5 +57,12 @@ async def process_age(message: Message, state: FSMContext):
     name = data.get("name")
     age = data.get("age")
 
-    await message.answer(f"Приятно познакомиться, {name}! Тебе {age}.")
+    tg_id: str = str(message.from_user.id)
+
+    saved_user = save_user(tg_id=tg_id, name=name, age=age)
+    if saved_user:
+        save_message(tg_id, text=f"Анкета заполнена пользователем {saved_user.name}")
+        await message.answer(f"Приятно познакомиться, {saved_user.name}! Тебе {saved_user.age}.")
+    else:
+        await message.answer("Произошла ошибка при сохранении данных.")
     await state.clear()
