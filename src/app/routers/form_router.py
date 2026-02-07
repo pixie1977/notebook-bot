@@ -6,37 +6,40 @@ from aiogram.types import Message
 
 from src.infra.db_service import save_user, save_message
 
+
 router = Router()
+
 
 class Form(StatesGroup):
     """
-    Класс, описывающий состояния формы.
+    Машина состояний для сбора данных пользователя.
+    Состояния: ввод имени → ввод возраста.
     """
     name = State()
     age = State()
 
 
 @router.message(Command("myage"))
-async def cmd_start(message: Message, state: FSMContext):
+async def cmd_start(message: Message, state: FSMContext) -> None:
     """
-    Обработчик команды /start.
-    Инициализирует машину состояний (FSM), устанавливает состояние Form.name.
+    Обработчик команды /myage.
+    Инициализирует FSM и запрашивает имя пользователя.
 
-    :param message: Объект входящего сообщения от пользователя.
-    :param state: Контекст состояния FSM для хранения данных между шагами.
+    :param message: Входящее сообщение от пользователя.
+    :param state: Контекст машины состояний.
     """
     await state.set_state(Form.name)
     await message.answer("Привет! Как тебя зовут?")
 
 
 @router.message(Form.name)
-async def process_name(message: Message, state: FSMContext):
+async def process_name(message: Message, state: FSMContext) -> None:
     """
     Обработчик ввода имени.
-    Сохраняет имя в FSM-хранилище и переводит пользователя в состояние ожидания возраста.
+    Сохраняет имя и переходит к состоянию ввода возраста.
 
-    :param message: Сообщение с именем пользователя.
-    :param state: Контекст состояния для обновления данных и смены состояния.
+    :param message: Сообщение с именем.
+    :param state: Контекст состояния.
     """
     await state.update_data(name=message.text)
     await state.set_state(Form.age)
@@ -44,14 +47,13 @@ async def process_name(message: Message, state: FSMContext):
 
 
 @router.message(Form.age)
-async def process_age(message: Message, state: FSMContext):
+async def process_age(message: Message, state: FSMContext) -> None:
     """
     Обработчик ввода возраста.
-    Сохраняет возраст, извлекает все данные из FSM, выводит персональное приветствие
-    и завершает сессию, очищая состояние.
+    Сохраняет данные в БД, отправляет подтверждение и очищает состояние.
 
-    :param message: Сообщение с возрастом пользователя.
-    :param state: Контекст состояния для получения данных и очистки FSM.
+    :param message: Сообщение с возрастом.
+    :param state: Контекст состояния.
     """
     data = await state.update_data(age=message.text)
     name = data.get("name")
@@ -65,4 +67,5 @@ async def process_age(message: Message, state: FSMContext):
         await message.answer(f"Приятно познакомиться, {saved_user.name}! Тебе {saved_user.age}.")
     else:
         await message.answer("Произошла ошибка при сохранении данных.")
+
     await state.clear()

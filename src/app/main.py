@@ -2,16 +2,28 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
+from uvicorn import Config, Server  # Импорт перемещён из функции
 
-from src.config.config import TELEGRAM_TOKEN
-from src.app.routers import start_router, weather_router, crypto_router, form_router, history_router
+from src.app.web.app import create_app
+from src.config.config import TELEGRAM_TOKEN, WEBHOOK_URL
+from src.app.routers import (
+    start_router,
+    weather_router,
+    crypto_router,
+    form_router,
+    history_router,
+)
 
 
 async def main():
-    # Логирование
+    """
+    Запуск бота в режиме webhook с использованием FastAPI и Uvicorn.
+    Устанавливает вебхук, подключает роутеры и запускает HTTP-сервер для приёма обновлений.
+    """
+    # Настройка логирования
     logging.basicConfig(level=logging.INFO)
 
-    # Создание бота и диспетчера
+    # Создание бота и диспетчера с FSM
     bot = Bot(token=TELEGRAM_TOKEN)
     dp = Dispatcher(storage=MemoryStorage())
 
@@ -22,9 +34,17 @@ async def main():
     dp.include_router(form_router)
     dp.include_router(history_router)
 
-    # Запуск бота
-    logging.info("Bot is starting...")
-    await dp.start_polling(bot)
+    # Установка вебхука
+    await bot.set_webhook(url=WEBHOOK_URL, drop_pending_updates=True)
+
+    # Создание и запуск FastAPI-приложения
+    app = create_app(bot, dp)
+    config = Config(app, host="127.0.0.1", port=8080, log_level="info")
+    server = Server(config)
+
+    logging.info("Bot is starting in webhook mode...")
+    await server.serve()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

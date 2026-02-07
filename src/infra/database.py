@@ -1,21 +1,31 @@
+"""
+Модуль инициализации базы данных.
+Содержит настройку движка, сессии и контекстного менеджера для работы с SQLAlchemy.
+"""
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from typing import Optional, Any, Generator
 
+from src.config.config import DB_ADDR
 from src.infra.db_models import Base
 
-# TODO:: Движок БД (используем SQLite для простоты, в проме вынести в конфиг)
-engine = create_engine("sqlite:///tg_data.db", echo=True)
+
+# Создание движка БД (используем SQLite для простоты; в продакшене — конфигурировать)
+engine = create_engine(DB_ADDR, echo=True)
 
 # Фабрика сессий
 SessionLocal = sessionmaker(bind=engine)
 
 
-# Зависимость для получения сессии (полезно при интеграции с FastAPI и т.п.)
 @contextmanager
 def get_db_session() -> Session:
+    """
+    Контекстный менеджер для получения сессии SQLAlchemy.
+    Автоматически фиксирует транзакцию при успехе, откатывает при ошибке.
+
+    :yield: объект сессии.
+    """
     session = SessionLocal()
     try:
         yield session
@@ -27,5 +37,6 @@ def get_db_session() -> Session:
         session.close()
 
 
+# Создание таблиц при импорте модуля (выполняется один раз)
 with get_db_session() as session:
     Base.metadata.create_all(bind=session.bind)

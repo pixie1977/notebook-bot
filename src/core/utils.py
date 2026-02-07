@@ -1,14 +1,28 @@
+"""
+Утилиты для обработки данных, используемых в боте.
+Содержит функции для интерпретации кодов погоды и асинхронного получения JSON.
+"""
+
 import logging
+from typing import Any, Dict, Tuple
 
 import httpx
+
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 def interpret_weather_code(code: int) -> str:
+    """
+    Преобразует числовой код погоды из Open-Meteo в соответствующий эмодзи с описанием.
+
+    :param code: числовой код погоды.
+    :return: строка с эмодзи и текстовым описанием погоды.
+    """
     code = int(code)
-    mapping = {
+    weather_mapping: Dict[int, str] = {
         0: "☀️ Ясно",
         1: "🌤 В основном ясно",
         2: "⛅ Переменная облачность",
@@ -34,9 +48,20 @@ def interpret_weather_code(code: int) -> str:
         96: "⛈ Гроза с лёгким градом",
         99: "⛈ Гроза с сильным градом",
     }
-    return mapping.get(code, f"❓ Неизвестный код: {code}")
+    return weather_mapping.get(code, f"🌀 Неизвестный код: {code}")
 
-async def fetch_json(client: httpx.AsyncClient, url: str, name: str):
+
+async def fetch_json(
+    client: httpx.AsyncClient, url: str, name: str
+) -> Tuple[str, Dict[str, Any] | None]:
+    """
+    Асинхронно запрашивает JSON по указанному URL.
+
+    :param client: экземпляр httpx.AsyncClient для выполнения запроса.
+    :param url: URL для GET-запроса.
+    :param name: метка для логирования и возврата.
+    :return: кортеж (name, json_data), где json_data — словарь или None при ошибке.
+    """
     try:
         response = await client.get(url)
         response.raise_for_status()
