@@ -1,0 +1,30 @@
+version: '3.8'
+
+volumes:
+  sqlite_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${SQLITE_DATA_DIR}
+      o: bind
+
+services:
+  bot:
+    build: .
+    container_name: telegram-bot
+    env_file: .env
+    volumes:
+      - sqlite_data:/app/tg_data.db
+    ports:
+      - "8080:8080"
+    expose:
+      - 8080
+    restart: unless-stopped
+
+  tuna:
+    image: yuccastream/tuna
+    command: http 8080 --inspect=false --subdomain=${SUB_DOMAIN}
+    env_file: .env
+    restart: always
+    network_mode: "host"
+

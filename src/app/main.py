@@ -39,7 +39,7 @@ async def main():
 
     # Создание и запуск FastAPI-приложения
     app = create_app(bot, dp)
-    config = Config(app, host="127.0.0.1", port=8080, log_level="info")
+    config = Config(app, host="0.0.0.0", port=8080, log_level="info")
     server = Server(config)
 
     logging.info("Bot is starting in webhook mode...")
