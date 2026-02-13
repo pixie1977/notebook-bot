@@ -1,6 +1,8 @@
 from aiogram import Router, types
 from aiogram.filters import Command
 
+from src.config.config import USER_REQUEST_MAX_LEN
+from src.core.llm_utils import process_llm_request
 
 router = Router()
 
@@ -19,7 +21,8 @@ async def cmd_start(message: types.Message) -> None:
         "/weather — погода в городах по выбору\n"
         "/eth — курс Ethereum\n"
         "/myage — прототип работы с состояниями\n"
-        "/last — 5 последних сообщений в чате"
+        "/last — 5 последних сообщений в чате\n"
+        f"/ask — запрос к LLM (максимум {USER_REQUEST_MAX_LEN} символов)\n"
     )
 
 
@@ -41,4 +44,24 @@ async def cmd_faq(message: types.Message) -> None:
     await message.answer("Заглушка для FAQ")
 
 
-# Хендлер на /FAQ (регистронезависимый) можно убрать — aiogram автоматически нормализует команды
+@router.message(Command("ask"))
+async def cmd_ask(message: types.Message) -> None:
+    """
+    Обработчик команды /ask.
+    Передает запрос в LLM.
+    """
+    user_query = message.text[len("/ask "):].strip() if len(message.text) > len("/ask ") else ""
+    if not user_query:
+        await message.answer("Пожалуйста, введите запрос после команды /ask.")
+        return
+
+    if len(user_query) > int(USER_REQUEST_MAX_LEN):
+        await message.answer(f"Запрос слишком длинный. Максимум — {USER_REQUEST_MAX_LEN} символов.")
+        return
+
+    try:
+        response = process_llm_request(user_query)
+        await message.answer(response)
+    except Exception as e:
+        await message.answer("Произошла ошибка при обработке запроса. Попробуйте позже.")
+        raise e

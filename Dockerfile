@@ -10,9 +10,6 @@ WORKDIR .
 # Копируем только pyproject.toml и poetry.lock (если есть)
 COPY pyproject.toml poetry.lock ./
 
-# Копируем pyproject.toml и README.md
-COPY pyproject.toml ./
-
 # Устанавливаем зависимости через Poetry
 RUN pip install --upgrade pip \
     && poetry config virtualenvs.create true \
